@@ -1,6 +1,6 @@
 function drawScene(programInfo, bounds) {
     const { gl, program, uniformLocations } = programInfo;
-    
+
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
     setPositionAttribute(programInfo);

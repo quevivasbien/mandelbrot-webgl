@@ -48,7 +48,7 @@ void main(void) {
 }
 `;
 
-const maxIters = 200;
+const maxIters = 300;
 
 // Fragment shader program
 const fsSource = `
@@ -198,55 +198,102 @@ const keyPresses = {
     right: false,
     up: false,
     down: false,
-    pageUp: false,
-    pageDown: false,
+    zoomOut: false,
+    zoomIn: false,
+};
+
+const keyBindings = {
+    left: "a",
+    right: "d",
+    up: "w",
+    down: "s",
+    zoomOut: "q",
+    zoomIn: "e",
 };
 
 // Bind keyboard events
 window.addEventListener("keydown", (event) => {
     switch (event.key) {
-        case "ArrowLeft":
+        case keyBindings.left:
             keyPresses.left = true;
             break;
-        case "ArrowRight":
+        case keyBindings.right:
             keyPresses.right = true;
             break;
-        case "ArrowUp":
+        case keyBindings.up:
             keyPresses.up = true;
             break;
-        case "ArrowDown":
+        case keyBindings.down:
             keyPresses.down = true;
             break;
-        case "PageUp":
-            keyPresses.pageUp = true;
+        case keyBindings.zoomOut:
+            keyPresses.zoomOut = true;
             break;
-        case "PageDown":
-            keyPresses.pageDown = true;
+        case keyBindings.zoomIn:
+            keyPresses.zoomIn = true;
             break;
     }
 });
 
 window.addEventListener("keyup", (event) => {
     switch (event.key) {
-        case "ArrowLeft":
+        case keyBindings.left:
             keyPresses.left = false;
             break;
-        case "ArrowRight":
+        case keyBindings.right:
             keyPresses.right = false;
             break;
-        case "ArrowUp":
+        case keyBindings.up:
             keyPresses.up = false;
             break;
-        case "ArrowDown":
+        case keyBindings.down:
             keyPresses.down = false;
             break;
-        case "PageUp":
-            keyPresses.pageUp = false;
+        case keyBindings.zoomOut:
+            keyPresses.zoomOut = false;
             break;
-        case "PageDown":
-            keyPresses.pageDown = false;
+        case keyBindings.zoomIn:
+            keyPresses.zoomIn = false;
             break;
     }
+});
+
+document.getElementById('up-key').innerText = keyBindings.up.toUpperCase();
+document.getElementById('left-key').innerText = keyBindings.left.toUpperCase();
+document.getElementById('down-key').innerText = keyBindings.down.toUpperCase();
+document.getElementById('right-key').innerText = keyBindings.right.toUpperCase();
+document.getElementById('zoom-out-key').innerText = keyBindings.zoomIn.toUpperCase();
+document.getElementById('zoom-in-key').innerText = keyBindings.zoomOut.toUpperCase();
+
+
+document.getElementById("zoom-out").addEventListener("click", () => {
+    zoom(0.5);
+    render();
+});
+
+document.getElementById("zoom-in").addEventListener("click", () => {
+    zoom(2);
+    render();
+});
+
+document.getElementById("move-up").addEventListener("click", () => {
+    move(0, 0.2);
+    render();
+});
+
+document.getElementById("move-down").addEventListener("click", () => {
+    move(0, -0.2);
+    render();
+});
+
+document.getElementById("move-left").addEventListener("click", () => {
+    move(-0.2, 0);
+    render();
+});
+
+document.getElementById("move-right").addEventListener("click", () => {
+    move(0.2, 0);
+    render();
 });
 
 function checkForMovement() {
@@ -265,10 +312,10 @@ function checkForMovement() {
     if (keyPresses.down) {
         y -= 0.02;
     }
-    if (keyPresses.pageUp) {
+    if (keyPresses.zoomOut) {
         zoom_amt *= 0.8;
     }
-    if (keyPresses.pageDown) {
+    if (keyPresses.zoomIn) {
         zoom_amt *= 1.25;
     }
     if (x !== 0 || y !== 0) {

@@ -1,12 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>WebGL Demo</title>
-    <script src="index.js" type="module"></script>
-  </head>
 
-  <body>
-    <canvas id="glcanvas"></canvas>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <title>Mandelbrot WebGL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <canvas id="glcanvas"></canvas>
+  <div class="nav-buttons">
+    <div class="nav-row">
+      <button id="zoom-out">-</button>
+      <button id="move-up">&uarr;</button>
+      <button id="zoom-in">+</button>
+    </div>
+    <div class="nav-row">
+      <button id="move-left">&larr;</button>
+      <button id="move-down">&darr;</button>
+      <button id="move-right">&rarr;</button>
+    </div>
+    <div class="keyboard-instructions">
+      <h2>Keyboard controls:</h2>
+      <p>Use the <span id="up-key"></span>, <span id="left-key"></span>, <span id="down-key"></span>, and <span
+          id="right-key"></span> keys to move the image.</p>
+      <p>Use the <span id="zoom-out-key"></span> and <span id="zoom-in-key"></span> keys to zoom in and out.</p>
+    </div>
+    <script src="index.js" type="module"></script>
+</body>
+
 </html>
