@@ -69,8 +69,13 @@ void main() {
     for (int i = 0; i < ${maxIters}; i++) {
         z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
         if (length(z) > 2.0) {
-            float t = 1.0 - float(i) / ${maxIters}.0;
-            gl_FragColor = vec4(t, t, t, 1.0);
+            float t = float(i) + 1. - log(log(length(z)))/log(2.);
+            gl_FragColor = vec4(
+                (-cos(0.02 * t) + 1.0) / 2.0, 
+				(-cos(0.03 * t) + 1.0) / 2.0, 
+				(-cos(0.05 * t) + 1.0) / 2.0, 
+				1.0
+            );
             return;
         }
     }
@@ -164,13 +169,21 @@ function getProgramInfo() {
 
 let programInfo = getProgramInfo();
 
+let frameTimes = [];
+
 // Draw the scene
 function render(refresh = false) {
+    const startTime = performance.now();
     if (refresh) {
         programInfo = getProgramInfo();
     }
     // Draw the scene
     drawScene(programInfo, viewBounds);
+    frameTimes.push(performance.now() - startTime);
+    if (frameTimes.length === 100) {
+        console.log(`Avg frame time for last 100 frames: ${frameTimes.reduce((a, b) => a + b, 0) / 100}ms`);
+        frameTimes = [];
+    }
 }
 
 function move(x, y) {
