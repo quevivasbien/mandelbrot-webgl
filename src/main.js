@@ -1,4 +1,5 @@
 import * as MandelbrotWebGL from "./mandelbrot-webgl.js";
+import * as MandelbrotWebGL64 from "./mandelbrot-webgl-64.js";
 import * as MandelbrotVanilla from "./mandelbrot-vanilla.js";
 
 const glcanvas = document.getElementById("glcanvas");
@@ -212,7 +213,12 @@ document.getElementById("render-type").addEventListener("change", (event) => {
     if (event.target.value === "WebGL") {
         render = MandelbrotWebGL.render;
         setCanvas(true);
-    } else if (event.target.value === "JS") {
+    }
+    else if (event.target.value === "WebGL-64") {
+        render = MandelbrotWebGL64.render;
+        setCanvas(true);
+    }
+    else if (event.target.value === "JS") {
         render = MandelbrotVanilla.render;
         setCanvas(false);
     }
