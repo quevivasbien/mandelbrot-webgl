@@ -33,6 +33,8 @@ uniform vec2 uY1;
 
 varying vec2 coords;
 
+// emulation based on https://github.com/gsson/wasm-talk/blob/master/mandelbrot-webgl/crate/src/mandelbrot64.frag
+
 vec2 quickTwoSum(float a, float b) {
     float sum = (a + b) * ONE;
     float err = b - (sum - a) * ONE;
@@ -279,20 +281,11 @@ function drawScene(programInfo, bounds) {
 
 let programInfo;
 
-let frameTimes = [];
-
 // Draw the scene
 export function render(refresh = false) {
-    const startTime = performance.now();
     if (!programInfo || refresh) {
         programInfo = getProgramInfo();
     }
     // Draw the scene
     drawScene(programInfo, viewBounds);
-    frameTimes.push(performance.now() - startTime);
-    if (frameTimes.length === 100) {
-        console.log(frameTimes);
-        console.log(`Avg frame time for last 100 frames: ${frameTimes.reduce((a, b) => a + b, 0) / 100}ms`);
-        frameTimes = [];
-    }
 }

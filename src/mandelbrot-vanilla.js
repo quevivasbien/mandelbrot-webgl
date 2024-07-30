@@ -19,17 +19,16 @@ export function render(refresh=false) {
             const c = { re: x, im: y };
             const z = { ...c };
             for (let iter = 0; iter < maxIters; iter++) {
-                const z_re = z.re * z.re - z.im * z.im + c.re;
-                z.im = 2.0 * z.re * z.im + c.im;
-                z.re = z_re;
                 if (z.re * z.re + z.im * z.im > 4.0) {
                     const t = iter + 1 - Math.log(Math.log(z.re * z.re + z.im * z.im)) / Math.log(2.0);
                     newData[idx * 4 + 0] = 255 * (1.0 - Math.cos(0.02 * t)) / 2.0;
                     newData[idx * 4 + 1] = 255 * (1.0 - Math.cos(0.03 * t)) / 2.0;
                     newData[idx * 4 + 2] = 255 * (1.0 - Math.cos(0.05 * t)) / 2.0;
-                    newData[idx * 4 + 3] = 255;
                     break;
                 }
+                const z_re = z.re * z.re - z.im * z.im + c.re;
+                z.im = 2.0 * z.re * z.im + c.im;
+                z.re = z_re;
             }
             newData[idx * 4 + 3] = 255;
         }

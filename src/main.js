@@ -1,6 +1,7 @@
 import * as MandelbrotWebGL from "./mandelbrot-webgl.js";
 import * as MandelbrotWebGL64 from "./mandelbrot-webgl-64.js";
 import * as MandelbrotVanilla from "./mandelbrot-vanilla.js";
+import * as MandelbrotPerturbation from "./mandelbrot-perturbation.js";
 
 const glcanvas = document.getElementById("glcanvas");
 const canvas2d = document.getElementById("2dcanvas");
@@ -222,8 +223,13 @@ document.getElementById("render-type").addEventListener("change", (event) => {
         render = MandelbrotVanilla.render;
         setCanvas(false);
     }
+    else if (event.target.value === "JS-Perturb") {
+        render = MandelbrotPerturbation.render;
+        setCanvas(false);
+    }
     render(true);
 });
+document.getElementById("render-type").value = "WebGL";
 
 function renderLoop() {
     checkForMovement();

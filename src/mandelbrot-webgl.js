@@ -37,7 +37,6 @@ void main() {
     );
     vec2 z = c;
     for (int i = 0; i < ${maxIters}; i++) {
-        z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
         if (dot(z, z) > 4.0) {
             float t = float(i) + 1. - log(log(dot(z, z)))/log(2.);
             gl_FragColor = vec4(
@@ -48,6 +47,7 @@ void main() {
             );
             return;
         }
+        z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
     }
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
@@ -177,19 +177,11 @@ function drawScene(programInfo, bounds) {
 
 let programInfo;
 
-let frameTimes = [];
-
 // Draw the scene
 export function render(refresh = false) {
-    const startTime = performance.now();
     if (!programInfo || refresh) {
         programInfo = getProgramInfo();
     }
     // Draw the scene
     drawScene(programInfo, viewBounds);
-    frameTimes.push(performance.now() - startTime);
-    if (frameTimes.length === 100) {
-        console.log(`Avg frame time for last 100 frames: ${frameTimes.reduce((a, b) => a + b, 0) / 100}ms`);
-        frameTimes = [];
-    }
 }
