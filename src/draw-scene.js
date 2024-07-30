@@ -1,4 +1,4 @@
-function drawScene(programInfo, bounds) {
+export function drawScene(programInfo, bounds) {
     const { gl, program, uniformLocations } = programInfo;
 
     // Tell WebGL how to pull out the positions from the position
@@ -40,5 +40,3 @@ function setPositionAttribute(programInfo) {
     );
     gl.enableVertexAttribArray(attribLocations.vertexPosition);
 }
-
-export { drawScene };

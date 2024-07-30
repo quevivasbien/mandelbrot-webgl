@@ -4,11 +4,21 @@
 <head>
   <meta charset="utf-8" />
   <title>Mandelbrot WebGL</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/src/style.css" />
 </head>
 
 <body>
-  <canvas id="glcanvas"></canvas>
+  <form id="render-type-form">
+    <label for="render-type">Render Type:</label>
+    <select name="render-type" id="render-type">
+      <option value="WebGL">WebGL</option>
+      <option value="JS">JS</option>
+    </select>
+  </form>
+  <div id="canvas-container">
+    <canvas id="glcanvas"></canvas>
+    <canvas id="2dcanvas"></canvas>
+  </div>
   <div class="nav-buttons">
     <div class="nav-row">
       <button id="zoom-out">-</button>
@@ -26,7 +36,7 @@
           id="right-key"></span> keys to move the image.</p>
       <p>Use the <span id="zoom-out-key"></span> and <span id="zoom-in-key"></span> keys to zoom in and out.</p>
     </div>
-    <script src="index.js" type="module"></script>
+    <script src="/src/main.js" type="module"></script>
 </body>
 
 </html>
