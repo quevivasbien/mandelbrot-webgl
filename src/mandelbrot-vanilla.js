@@ -1,16 +1,17 @@
-import { viewBounds } from "./main.js";
-
-const maxIters = 300;
+import { maxIters, viewBounds } from "./main.js";
 
 const canvas = document.getElementById("2dcanvas");
 let ctx;
 
-export function render(refresh=false) {
+export function render(refresh = false) {
     if (!ctx || refresh) {
         ctx = canvas.getContext("2d", { willReadFrequently: true });
     }
     const newData = new Uint8ClampedArray(canvas.width * canvas.height * 4);
-    const { x0, y0, x1, y1 } = viewBounds;
+    const x0 = viewBounds.x0.toNumber();
+    const x1 = viewBounds.x1.toNumber();
+    const y0 = viewBounds.y0.toNumber();
+    const y1 = viewBounds.y1.toNumber();
     for (let i = 0; i < canvas.height; i++) {
         for (let j = 0; j < canvas.width; j++) {
             const idx = i * canvas.width + j;

@@ -1,5 +1,5 @@
 import { initBuffers } from "./init-buffers.js";
-import { viewBounds } from "./main.js";
+import { maxIters, viewBounds } from "./main.js";
 
 // Vertex shader program
 const vsSource = `
@@ -18,10 +18,9 @@ void main(void) {
 }
 `;
 
-const maxIters = 300;
-
 // Fragment shader program
-const fsSource = `
+const fsSource = () => {
+    return `
 precision highp float;
 
 uniform float uX0;
@@ -52,6 +51,7 @@ void main() {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 `;
+};
 
 
 //
@@ -118,7 +118,7 @@ function getProgramInfo() {
         return;
     }
 
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+    const shaderProgram = initShaderProgram(gl, vsSource, fsSource());
 
     // Collect all the info needed to use the shader program.
     return {

@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import * as MandelbrotWebGL from "./mandelbrot-webgl.js";
 import * as MandelbrotWebGL64 from "./mandelbrot-webgl-64.js";
 import * as MandelbrotVanilla from "./mandelbrot-vanilla.js";
@@ -7,14 +8,29 @@ const glcanvas = document.getElementById("glcanvas");
 const canvas2d = document.getElementById("2dcanvas");
 
 let canvas = glcanvas;
-let render = MandelbrotWebGL.render;
+let renderFn = MandelbrotWebGL.render;
 
 export const viewBounds = {
-    x0: -2.0,
-    y0: -1.5,
-    x1: 1.0,
-    y1: 1.5,
+    x0: new Decimal(-2.0),
+    y0: new Decimal(-1.5),
+    x1: new Decimal(1.0),
+    y1: new Decimal(1.5),
 };
+
+export let maxIters = 100;
+
+function render(refresh = false) {
+    // Check if max iters needs to be changed
+    let zoomLevel = Math.log(viewBounds.x1.minus(viewBounds.x0).toNumber());
+    let itersNeeded = 100 * ((zoomLevel < 0) ? Math.ceil(-zoomLevel / 2) : 1);
+    if (maxIters !== itersNeeded) {
+        maxIters = itersNeeded;
+        console.log("maxIters", maxIters);
+        refresh = true;
+    }
+
+    renderFn(refresh);
+}
 
 function updateCanvasSize() {
     // Base canvas width and height on window size
@@ -24,16 +40,15 @@ function updateCanvasSize() {
     console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
 
     // Update y bounds based on canvas height
-    const yCenter = 0.5 * (viewBounds.y0 + viewBounds.y1);
-    const yRange = (canvas.height / canvas.width) * (viewBounds.x1 - viewBounds.x0);
-    viewBounds.y0 = yCenter - 0.5 * yRange;
-    viewBounds.y1 = yCenter + 0.5 * yRange;
+    const yCenter = viewBounds.y0.plus(viewBounds.y1).times(0.5);
+    const yRange = viewBounds.x1.minus(viewBounds.x0).times(canvas.height / canvas.width);
+    viewBounds.y0 = yCenter.minus(yRange.times(0.5));
+    viewBounds.y1 = yCenter.plus(yRange.times(0.5));
 }
 
 // When the window is resized, update the canvas size
 window.addEventListener("resize", () => {
     updateCanvasSize();
-    console.log("Resized");
     render(true);
 });
 
@@ -54,24 +69,38 @@ function setCanvas(gl) {
 
 setCanvas(true);
 
+function updateViewLocLabel() {
+    const xCenter = viewBounds.x0.plus(viewBounds.x1).times(0.5);
+    const yCenter = viewBounds.y0.plus(viewBounds.y1).times(0.5);
+    const xWidth = viewBounds.x1.minus(viewBounds.x0);
+    const zoomLevel = 3.0  / xWidth.toNumber();
+    const precisionNeeded = 3 + Math.floor(Math.log(zoomLevel) / Math.log(10.0));
+    document.getElementById("view-loc").innerHTML = `x: ${xCenter.toPrecision(precisionNeeded)}, y: ${yCenter.toPrecision(precisionNeeded)}, zoom: ${zoomLevel.toPrecision(3)}`;
+}
+updateViewLocLabel();
+
 function move(x, y) {
-    const width = viewBounds.x1 - viewBounds.x0;
-    const height = viewBounds.y1 - viewBounds.y0;
-    viewBounds.x0 += x * width;
-    viewBounds.x1 += x * width;
-    viewBounds.y0 += y * height;
-    viewBounds.y1 += y * height;
+    const width = viewBounds.x1.minus(viewBounds.x0);
+    const height = viewBounds.y1.minus(viewBounds.y0);
+    viewBounds.x0 = viewBounds.x0.plus(width.times(x));
+    viewBounds.x1 = viewBounds.x1.plus(width.times(x));
+    viewBounds.y0 = viewBounds.y0.plus(height.times(y));
+    viewBounds.y1 = viewBounds.y1.plus(height.times(y));
+
+    updateViewLocLabel();
 }
 
 function zoom(amt) {
-    const width = (viewBounds.x1 - viewBounds.x0) / amt;
-    const height = (viewBounds.y1 - viewBounds.y0) / amt;
-    const xCenter = 0.5 * (viewBounds.x0 + viewBounds.x1);
-    const yCenter = 0.5 * (viewBounds.y0 + viewBounds.y1);
-    viewBounds.x0 = xCenter - 0.5 * width;
-    viewBounds.x1 = xCenter + 0.5 * width;
-    viewBounds.y0 = yCenter - 0.5 * height;
-    viewBounds.y1 = yCenter + 0.5 * height;
+    const width = viewBounds.x1.minus(viewBounds.x0).div(amt);
+    const height = viewBounds.y1.minus(viewBounds.y0).div(amt);
+    const xCenter = viewBounds.x0.plus(viewBounds.x1).times(0.5);
+    const yCenter = viewBounds.y0.plus(viewBounds.y1).times(0.5);
+    viewBounds.x0 = xCenter.minus(width.times(0.5));
+    viewBounds.x1 = xCenter.plus(width.times(0.5));
+    viewBounds.y0 = yCenter.minus(height.times(0.5));
+    viewBounds.y1 = yCenter.plus(height.times(0.5));
+
+    updateViewLocLabel();
 }
 
 const keyPresses = {
@@ -146,7 +175,6 @@ document.getElementById('right-key').innerText = keyBindings.right.toUpperCase()
 document.getElementById('zoom-out-key').innerText = keyBindings.zoomIn.toUpperCase();
 document.getElementById('zoom-in-key').innerText = keyBindings.zoomOut.toUpperCase();
 
-
 document.getElementById("zoom-out").addEventListener("click", () => {
     zoom(0.5);
     render();
@@ -212,19 +240,19 @@ function checkForMovement() {
 
 document.getElementById("render-type").addEventListener("change", (event) => {
     if (event.target.value === "WebGL") {
-        render = MandelbrotWebGL.render;
+        renderFn = MandelbrotWebGL.render;
         setCanvas(true);
     }
     else if (event.target.value === "WebGL-64") {
-        render = MandelbrotWebGL64.render;
+        renderFn = MandelbrotWebGL64.render;
         setCanvas(true);
     }
     else if (event.target.value === "JS") {
-        render = MandelbrotVanilla.render;
+        renderFn = MandelbrotVanilla.render;
         setCanvas(false);
     }
     else if (event.target.value === "JS-Perturb") {
-        render = MandelbrotPerturbation.render;
+        renderFn = MandelbrotPerturbation.render;
         setCanvas(false);
     }
     render(true);

@@ -8,6 +8,12 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+#view-loc {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 11px;
+    text-align: center;
+}
+
 #canvas-container {
     display: flex;
     flex-direction: column;

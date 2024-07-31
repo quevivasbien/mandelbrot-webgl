@@ -1,3 +1,4 @@
+import { Decimal } from "decimal.js";
 import { viewBounds } from "./main.js";
 
 const maxIters = 300;
@@ -22,27 +23,28 @@ export function render(refresh=false) {
 
     // Select base point
     const base_c = {
-        re: x0 + baseCoords.x * (x1 - x0),
-        im: y1 - baseCoords.y * (y1 - y0),
+        re: x0.plus(new Decimal(baseCoords.x).times(x1.minus(x0))),
+        im: y1.minus(new Decimal(baseCoords.y).times(y1.minus(y0))),
     };
-    const base_z = [{ ...base_c }];
+    let z0 = base_c;
+    const base_z = [{ re: z0.re.toNumber(), im: z0.im.toNumber() }];
     for (let iter = 0; iter < maxIters - 1; iter++) {
-        const z0 = base_z[iter];
         const z_new = {
-            re: z0.re * z0.re - z0.im * z0.im + base_c.re,
-            im: 2.0 * z0.re * z0.im + base_c.im
+            re: z0.re.times(z0.re).minus(z0.im.times(z0.im)).plus(base_c.re),
+            im: new Decimal(2.0).times(z0.re).times(z0.im).plus(base_c.im),
         };
-        base_z.push(z_new);
+        z0 = z_new;
+        base_z.push({ re: z_new.re.toNumber(), im: z_new.im.toNumber() });
     }
 
     for (let i = 0; i < canvas.height; i++) {
         for (let j = 0; j < canvas.width; j++) {
             const idx = i * canvas.width + j;
-            const x = x0 + j * (x1 - x0) / (canvas.width - 1);
-            const y = y1 - i * (y1 - y0) / (canvas.height - 1);
+            const x = x0.plus(new Decimal(j).times(x1.minus(x0)).div(new Decimal(canvas.width - 1)));
+            const y = y1.minus(new Decimal(i).times(y1.minus(y0)).div(new Decimal(canvas.height - 1)));
             const c = { re: x, im: y };
-            const dc = { re: c.re - base_c.re, im: c.im - base_c.im };
-            const z = { ...c };
+            const dc = { re: c.re.minus(base_c.re).toNumber(), im: c.im.minus(base_c.im).toNumber() };
+            const z = { re: c.re.toNumber(), im: c.im.toNumber() };
             const dz = { ...dc };
             for (let iter = 0; iter < maxIters; iter++) {
                 if (z.re * z.re + z.im * z.im > 4.0) {
@@ -60,7 +62,6 @@ export function render(refresh=false) {
                 dz.im = dz_im_new;
                 z.re = z0.re + dz.re;
                 z.im = z0.re + dz.im;
-                
             }
             newData[idx * 4 + 3] = 255;
         }
