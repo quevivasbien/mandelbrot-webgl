@@ -1,5 +1,7 @@
 import { initBuffers } from "./init-buffers.js";
-import { maxIters, viewBounds } from "./main.js";
+import { antiAliasing, maxIters, viewBounds } from "./main.js";
+
+const canvas = document.getElementById("glcanvas");
 
 // Vertex shader program
 const vsSource = `
@@ -19,39 +21,88 @@ void main(void) {
 `;
 
 // Fragment shader program
-const fsSource = () => {
-    return `
-precision highp float;
+function fsSource() {
+    if (antiAliasing === 1) {
+        return `
+        precision highp float;
 
-uniform float uX0;
-uniform float uY0;
-uniform float uX1;
-uniform float uY1;
+        uniform float uX0;
+        uniform float uY0;
+        uniform float uX1;
+        uniform float uY1;
 
-varying vec2 coords;
-void main() {
-    vec2 c = vec2(
-        coords.x * (uX1 - uX0) + uX0,
-        coords.y * (uY1 - uY0) + uY0
-    );
-    vec2 z = c;
-    for (int i = 0; i < ${maxIters}; i++) {
-        if (dot(z, z) > 4.0) {
-            float t = float(i) + 1. - log(log(dot(z, z)))/log(2.);
-            gl_FragColor = vec4(
-                (-cos(0.02 * t) + 1.0) / 2.0, 
-				(-cos(0.03 * t) + 1.0) / 2.0, 
-				(-cos(0.05 * t) + 1.0) / 2.0, 
-				1.0
+        varying vec2 coords;
+        void main() {
+            vec2 c = vec2(
+                coords.x * (uX1 - uX0) + uX0,
+                coords.y * (uY1 - uY0) + uY0
             );
-            return;
+            vec2 z = c;
+            for (int i = 0; i < ${maxIters}; i++) {
+                if (dot(z, z) > 4.0) {
+                    float t = float(i) + 1. - log(log(dot(z, z)))/log(2.);
+                    gl_FragColor = vec4(
+                        (-cos(0.02 * t) + 1.0) / 2.0, 
+                        (-cos(0.03 * t) + 1.0) / 2.0, 
+                        (-cos(0.05 * t) + 1.0) / 2.0, 
+                        1.0
+                    );
+                    return;
+                }
+                z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
+            }
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
-        z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
+        `;
     }
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    else {
+        return `
+        precision highp float;
+
+        uniform float uX0;
+        uniform float uY0;
+        uniform float uX1;
+        uniform float uY1;
+
+        uniform float uPixWidth;
+        
+        varying vec2 coords;
+
+        vec4 iteration(vec2 c) {
+            vec2 z = c;
+            for (int i = 0; i < ${maxIters}; i++) {
+                if (dot(z, z) > 4.0) {
+                    float t = float(i) + 1. - log(log(dot(z, z)))/log(2.);
+                    return vec4(
+                        (-cos(0.02 * t) + 1.0) / 2.0, 
+                        (-cos(0.03 * t) + 1.0) / 2.0, 
+                        (-cos(0.05 * t) + 1.0) / 2.0, 
+                        1.0
+                    );
+                }
+                z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
+            }
+            return vec4(0.0, 0.0, 0.0, 1.0);
+        }
+
+        void main() {
+            vec2 cBase = vec2(
+                coords.x * (uX1 - uX0) + uX0 - 0.5 * uPixWidth,
+                coords.y * (uY1 - uY0) + uY0 - 0.5 * uPixWidth
+            );
+            for (int xi = 0; xi < ${antiAliasing}; xi++) {
+                for (int yi = 0; yi < ${antiAliasing}; yi++) {
+                    vec2 c = cBase + vec2(
+                        float(xi) + 0.5,
+                        float(yi) + 0.5
+                    ) * uPixWidth / ${antiAliasing}.0;
+                    gl_FragColor = gl_FragColor + iteration(c) / (${antiAliasing}.0 * ${antiAliasing}.0);
+                }
+            }
+        }
+        `;
+    }
 }
-`;
-};
 
 
 //
@@ -111,7 +162,6 @@ function initShaderProgram(gl, vsSource, fsSource) {
 }
 
 function getProgramInfo() {
-    const canvas = document.getElementById("glcanvas");
     const gl = canvas.getContext("webgl");
     if (!gl) {
         alert("Unable to initialize WebGL. Your browser or machine may not support it.");
@@ -121,7 +171,7 @@ function getProgramInfo() {
     const shaderProgram = initShaderProgram(gl, vsSource, fsSource());
 
     // Collect all the info needed to use the shader program.
-    return {
+    const programInfo = {
         gl,
         program: shaderProgram,
         attribLocations: {
@@ -135,9 +185,14 @@ function getProgramInfo() {
         },
         buffers: initBuffers(gl),
     };
+    if (antiAliasing > 1) {
+        programInfo.uniformLocations.uPixWidth = gl.getUniformLocation(shaderProgram, "uPixWidth");
+    }
+
+    return programInfo;
 }
 
-function drawScene(programInfo, bounds) {
+function drawScene(programInfo) {
     const { gl, buffers, program, attribLocations, uniformLocations } = programInfo;
 
     // Tell WebGL how to pull out the positions from the position
@@ -163,10 +218,15 @@ function drawScene(programInfo, bounds) {
     gl.useProgram(program);
 
     // Set the shader uniforms
-    gl.uniform1f(uniformLocations.uX0, bounds.x0);
-    gl.uniform1f(uniformLocations.uY0, bounds.y0);
-    gl.uniform1f(uniformLocations.uX1, bounds.x1);
-    gl.uniform1f(uniformLocations.uY1, bounds.y1);
+    gl.uniform1f(uniformLocations.uX0, viewBounds.x0);
+    gl.uniform1f(uniformLocations.uY0, viewBounds.y0);
+    gl.uniform1f(uniformLocations.uX1, viewBounds.x1);
+    gl.uniform1f(uniformLocations.uY1, viewBounds.y1);
+
+    if (programInfo.uniformLocations.uPixWidth) {
+        const pixWidth = viewBounds.x1.minus(viewBounds.x0).div(canvas.width);
+        gl.uniform1f(uniformLocations.uPixWidth, pixWidth);
+    }
 
     {
         const offset = 0;

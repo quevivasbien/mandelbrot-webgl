@@ -17,8 +17,10 @@ export const viewBounds = {
     y1: new Decimal(1.5),
 };
 
-export let maxIters = 100;
-let autoMaxIters = true;
+export let maxIters = document.getElementById("max-iters").value;
+let autoMaxIters = document.getElementById("auto-max-iters").checked;
+
+export let antiAliasing = parseInt(document.getElementById("anti-aliasing").value);
 
 function updateMaxIters(newMaxIters) {
     if (!newMaxIters) {
@@ -60,6 +62,11 @@ document.getElementById("max-iters").addEventListener("input", () => {
     render(true);
 });
 
+document.getElementById("anti-aliasing").addEventListener("change", (e) => {
+    antiAliasing = parseInt(e.target.value);
+    render(true);
+})
+
 function updateCanvasSize() {
     // Base canvas width and height on window size
     canvas.width = 0.8 * window.innerWidth;
@@ -80,7 +87,7 @@ window.addEventListener("resize", () => {
     render(true);
 });
 
-function setCanvas(gl) {
+function setMode(gl) {
     if (gl) {
         canvas = glcanvas;
         updateCanvasSize();
@@ -93,15 +100,37 @@ function setCanvas(gl) {
         canvas2d.style.display = "block";
         glcanvas.style.display = "none";
     }
+    document.getElementById("anti-aliasing").disabled = !gl;
 }
 
-setCanvas(true);
+setMode(true);
+
+document.getElementById("render-type").addEventListener("change", (event) => {
+    if (event.target.value === "WebGL") {
+        renderFn = MandelbrotWebGL.render;
+        setMode(true);
+    }
+    else if (event.target.value === "WebGL-64") {
+        renderFn = MandelbrotWebGL64.render;
+        setMode(true);
+    }
+    else if (event.target.value === "JS") {
+        renderFn = MandelbrotVanilla.render;
+        setMode(false);
+    }
+    else if (event.target.value === "JS-Perturb") {
+        renderFn = MandelbrotPerturbation.render;
+        setMode(false);
+    }
+    render(true);
+});
+document.getElementById("render-type").value = "WebGL";
 
 function updateViewLocLabel() {
     const xCenter = viewBounds.x0.plus(viewBounds.x1).times(0.5);
     const yCenter = viewBounds.y0.plus(viewBounds.y1).times(0.5);
     const xWidth = viewBounds.x1.minus(viewBounds.x0);
-    const zoomLevel = 3.0  / xWidth.toNumber();
+    const zoomLevel = 3.0 / xWidth.toNumber();
     const precisionNeeded = 3 + Math.floor(Math.log(zoomLevel) / Math.log(10.0));
     document.getElementById("view-loc").innerHTML = `x: ${xCenter.toPrecision(precisionNeeded)}, y: ${yCenter.toPrecision(precisionNeeded)}, zoom: ${zoomLevel.toPrecision(3)}`;
 }
@@ -265,27 +294,6 @@ function checkForMovement() {
         render();
     }
 }
-
-document.getElementById("render-type").addEventListener("change", (event) => {
-    if (event.target.value === "WebGL") {
-        renderFn = MandelbrotWebGL.render;
-        setCanvas(true);
-    }
-    else if (event.target.value === "WebGL-64") {
-        renderFn = MandelbrotWebGL64.render;
-        setCanvas(true);
-    }
-    else if (event.target.value === "JS") {
-        renderFn = MandelbrotVanilla.render;
-        setCanvas(false);
-    }
-    else if (event.target.value === "JS-Perturb") {
-        renderFn = MandelbrotPerturbation.render;
-        setCanvas(false);
-    }
-    render(true);
-});
-document.getElementById("render-type").value = "WebGL";
 
 function renderLoop() {
     checkForMovement();
