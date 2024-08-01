@@ -8,14 +8,24 @@
 </head>
 
 <body>
-  <form id="render-type-form">
-    <label for="render-type">Render Type:</label>
-    <select name="render-type" id="render-type">
-      <option value="WebGL">WebGL</option>
-      <option value="WebGL-64">WebGL, emulated 64-bit</option>
-      <option value="JS">JS</option>
-      <option value="JS-Perturb">JS, using perturbations</option>
-    </select>
+  <form id="render-config-form">
+    <div>
+      <label for="render-type">Render Type:</label>
+      <select name="render-type" id="render-type">
+        <option value="WebGL">WebGL</option>
+        <option value="WebGL-64">WebGL, emulated 64-bit</option>
+        <option value="JS">JS</option>
+        <option value="JS-Perturb">JS, using perturbations</option>
+      </select>
+    </div>
+    <div>
+      <label for="max-iters">Max Iterations:</label>
+      <input type="number" id="max-iters" name="max-iters" min="1" value="100" disabled />
+      <div>
+        <label for="auto-max-iters">Auto</label>
+        <input type="checkbox" id="auto-max-iters" name="auto-max-iters" checked />
+      </div>
+    </div>
   </form>
   <div id="view-loc"></div>
   <div id="canvas-container">

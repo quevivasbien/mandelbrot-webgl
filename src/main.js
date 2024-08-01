@@ -18,19 +18,47 @@ export const viewBounds = {
 };
 
 export let maxIters = 100;
+let autoMaxIters = true;
 
-function render(refresh = false) {
-    // Check if max iters needs to be changed
+function updateMaxIters(newMaxIters) {
+    if (!newMaxIters) {
+        return;
+    }
+    maxIters = newMaxIters;
+    document.getElementById("max-iters").value = maxIters;
+}
+
+function autoSetMaxiters() {
     let zoomLevel = Math.log(viewBounds.x1.minus(viewBounds.x0).toNumber());
     let itersNeeded = 100 * ((zoomLevel < 0) ? Math.ceil(-zoomLevel / 2) : 1);
     if (maxIters !== itersNeeded) {
-        maxIters = itersNeeded;
-        console.log("maxIters", maxIters);
-        refresh = true;
+        updateMaxIters(itersNeeded);
+        return true;
+    }
+    return false;
+}
+
+function render(refresh = false) {
+    // If maxIters is auto, check if max iters needs to be changed
+    if (autoMaxIters) {
+        refresh |= autoSetMaxiters();
     }
 
     renderFn(refresh);
 }
+
+document.getElementById("auto-max-iters").addEventListener("click", () => {
+    autoMaxIters = document.getElementById("auto-max-iters").checked;
+    document.getElementById("max-iters").disabled = autoMaxIters;
+    if (autoSetMaxiters()) {
+        render(true);
+    }
+});
+
+document.getElementById("max-iters").addEventListener("input", () => {
+    updateMaxIters(parseInt(document.getElementById("max-iters").value));
+    render(true);
+});
 
 function updateCanvasSize() {
     // Base canvas width and height on window size

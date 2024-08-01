@@ -1,7 +1,5 @@
 import { Decimal } from "decimal.js";
-import { viewBounds } from "./main.js";
-
-const maxIters = 300;
+import { maxIters, viewBounds } from "./main.js";
 
 const canvas = document.getElementById("2dcanvas");
 let ctx;
