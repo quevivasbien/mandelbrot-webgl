@@ -136,6 +136,11 @@ function updateViewLocLabel() {
 }
 updateViewLocLabel();
 
+document.getElementById("download-link").addEventListener("click", () => {
+    const link = document.getElementById("download-link");
+    link.href = canvas.toDataURL();
+});
+
 function move(x, y) {
     const width = viewBounds.x1.minus(viewBounds.x0);
     const height = viewBounds.y1.minus(viewBounds.y0);

@@ -248,7 +248,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 }
 
 function getProgramInfo() {
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
     if (!gl) {
         alert("Unable to initialize WebGL. Your browser or machine may not support it.");
         return;

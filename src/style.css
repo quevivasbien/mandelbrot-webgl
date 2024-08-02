@@ -17,6 +17,15 @@
     gap: 10px;
 }
 
+.spaced-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    width: 80%;
+}
+
 #view-loc {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 11px;

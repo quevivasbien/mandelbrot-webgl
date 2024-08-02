@@ -1,4 +1,3 @@
-import { Decimal } from "decimal.js";
 import { maxIters, viewBounds } from "./main.js";
 
 const canvas = document.getElementById("2dcanvas");
@@ -37,7 +36,6 @@ export function render(refresh=false) {
     const width = x1.minus(x0).toNumber();
     const height = y1.minus(y0).toNumber();
     
-    console.log("baseCoords:", baseCoords);
     for (let i = 0; i < canvas.height; i++) {
         for (let j = 0; j < canvas.width; j++) {
             const idx = i * canvas.width + j;
