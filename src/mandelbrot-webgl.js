@@ -1,24 +1,7 @@
-import { initBuffers } from "./init-buffers.js";
 import { antiAliasing, maxIters, viewBounds } from "./main.js";
+import { getProgramInfo } from "./webgl.js";
 
 const canvas = document.getElementById("glcanvas");
-
-// Vertex shader program
-const vsSource = `
-precision highp float;
-
-attribute vec4 aVertexPosition;
-
-uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
-
-varying vec2 coords;
-
-void main(void) {
-    gl_Position = aVertexPosition;
-    coords = vec2(aVertexPosition.x, aVertexPosition.y) * 0.5 + 0.5;
-}
-`;
 
 // Fragment shader program
 function fsSource() {
@@ -105,93 +88,6 @@ function fsSource() {
 }
 
 
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
-function loadShader(gl, type, source) {
-    const shader = gl.createShader(type);
-
-    // Send the source to the shader object
-
-    gl.shaderSource(shader, source);
-
-    // Compile the shader program
-
-    gl.compileShader(shader);
-
-    // See if it compiled successfully
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert(
-            `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`
-        );
-        gl.deleteShader(shader);
-        return null;
-    }
-
-    return shader;
-}
-
-//
-// Initialize a shader program, so WebGL knows how to draw our data
-//
-function initShaderProgram(gl, vsSource, fsSource) {
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-    // Create the shader program
-
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    // If creating the shader program failed, alert
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert(
-            `Unable to initialize the shader program: ${gl.getProgramInfoLog(
-                shaderProgram
-            )}`
-        );
-        return null;
-    }
-
-    return shaderProgram;
-}
-
-function getProgramInfo() {
-    const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
-    if (!gl) {
-        alert("Unable to initialize WebGL. Your browser or machine may not support it.");
-        return;
-    }
-
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource());
-
-    // Collect all the info needed to use the shader program.
-    const programInfo = {
-        gl,
-        program: shaderProgram,
-        attribLocations: {
-            vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-        },
-        uniformLocations: {
-            uX0: gl.getUniformLocation(shaderProgram, "uX0"),
-            uY0: gl.getUniformLocation(shaderProgram, "uY0"),
-            uX1: gl.getUniformLocation(shaderProgram, "uX1"),
-            uY1: gl.getUniformLocation(shaderProgram, "uY1"),
-        },
-        buffers: initBuffers(gl),
-    };
-    if (antiAliasing > 1) {
-        programInfo.uniformLocations.uPixWidth = gl.getUniformLocation(shaderProgram, "uPixWidth");
-    }
-
-    return programInfo;
-}
-
 function drawScene(programInfo) {
     const { gl, buffers, program, attribLocations, uniformLocations } = programInfo;
 
@@ -240,8 +136,8 @@ let programInfo;
 // Draw the scene
 export function render(refresh = false) {
     if (!programInfo || refresh) {
-        programInfo = getProgramInfo();
+        programInfo = getProgramInfo(fsSource());
     }
     // Draw the scene
-    drawScene(programInfo, viewBounds);
+    drawScene(programInfo);
 }

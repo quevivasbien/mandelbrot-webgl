@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import * as MandelbrotWebGL from "./mandelbrot-webgl.js";
 import * as MandelbrotWebGL64 from "./mandelbrot-webgl-64.js";
+import * as MandelbrotWebGLPerturbation from "./mandelbrot-webgl-perturbation.js";
 import * as MandelbrotVanilla from "./mandelbrot-vanilla.js";
 import * as MandelbrotPerturbation from "./mandelbrot-perturbation.js";
 
@@ -112,6 +113,10 @@ document.getElementById("render-type").addEventListener("change", (event) => {
     }
     else if (event.target.value === "WebGL-64") {
         renderFn = MandelbrotWebGL64.render;
+        setMode(true);
+    }
+    else if (event.target.value === "WebGL-Perturb") {
+        renderFn = MandelbrotWebGLPerturbation.render;
         setMode(true);
     }
     else if (event.target.value === "JS") {

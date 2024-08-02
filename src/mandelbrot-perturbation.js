@@ -11,7 +11,7 @@ canvas.addEventListener("click", (event) => {
     render();
 });
 
-export function render(refresh=false) {
+export function render(refresh = false) {
     if (!ctx || refresh) {
         ctx = canvas.getContext("2d", { willReadFrequently: true });
     }
