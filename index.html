@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Mandelbrot WebGL</title>
+  <script type="module" crossorigin src="/assets/index-BQH5mqPD.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CLMDzLJa.css">
+</head>
+
+<body>
+  <form id="render-config-form">
+    <div>
+      <label for="render-type">Render Type:</label>
+      <select name="render-type" id="render-type">
+        <option value="WebGL">WebGL</option>
+        <option value="WebGL-64">WebGL, emulated 64-bit</option>
+        <option value="WebGL-Perturb">WebGL, using perturbations</option>
+        <option value="JS">JS</option>
+        <option value="JS-Perturb">JS, using perturbations</option>
+      </select>
+    </div>
+    <div>
+      <label for="max-iters">Max Iterations:</label>
+      <input type="number" id="max-iters" name="max-iters" min="1" value="100" disabled />
+      <div>
+        <label for="auto-max-iters">Auto</label>
+        <input type="checkbox" id="auto-max-iters" name="auto-max-iters" checked />
+      </div>
+    </div>
+    <div>
+      <label for="anti-aliasing">Anti-aliasing:</label>
+      <select name="anti-aliasing" id="anti-aliasing">
+        <option value="1">None</option>
+        <option value="2">4x</option>
+        <option value="3">9x</option>
+      </select>
+    </div>
+  </form>
+  <div class="spaced-row">
+    <a id="download-link" href="" download="mandelbrot.png">Save image</a>
+    <div id="view-loc"></div>
+    <div></div>
+  </div>
+  <div id="canvas-container">
+    <canvas id="glcanvas"></canvas>
+    <canvas id="2dcanvas"></canvas>
+  </div>
+  <div class="nav-buttons">
+    <div class="nav-row">
+      <button id="zoom-out">-</button>
+      <button id="move-up">&uarr;</button>
+      <button id="zoom-in">+</button>
+    </div>
+    <div class="nav-row">
+      <button id="move-left">&larr;</button>
+      <button id="move-down">&darr;</button>
+      <button id="move-right">&rarr;</button>
+    </div>
+    <div class="keyboard-instructions">
+      <h2>Keyboard controls:</h2>
+      <p>Use the <span id="up-key"></span>, <span id="left-key"></span>, <span id="down-key"></span>, and <span
+          id="right-key"></span> keys to move the image.</p>
+      <p>Use the <span id="zoom-out-key"></span> and <span id="zoom-in-key"></span> keys to zoom in and out.</p>
+    </div>
+</body>
+
+</html>
