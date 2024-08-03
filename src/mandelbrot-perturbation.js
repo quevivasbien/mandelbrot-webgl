@@ -1,15 +1,7 @@
-import { maxIters, viewBounds } from "./main.js";
+import { maxIters, perturbationPoint, viewBounds } from "./main.js";
 
 const canvas = document.getElementById("2dcanvas");
 let ctx;
-
-const baseCoords = { x: 0.5, y: 0.5 };
-
-canvas.addEventListener("click", (event) => {
-    baseCoords.x = event.offsetX / canvas.width;
-    baseCoords.y = 1.0 - event.offsetY / canvas.height;
-    render();
-});
 
 export function render(refresh = false) {
     if (!ctx || refresh) {
@@ -18,21 +10,18 @@ export function render(refresh = false) {
     const newData = new Uint8ClampedArray(canvas.width * canvas.height * 4);
     const { x0, y0, x1, y1 } = viewBounds;
 
-    // Select base point
-    const base_c = {
-        re: x0.plus(x1.minus(x0).times(baseCoords.x)),
-        im: y0.plus(y1.minus(y0).times(baseCoords.y)),
-    };
-    let z0 = base_c;
+    let z0 = perturbationPoint;
     const base_z = [{ re: z0.re.toNumber(), im: z0.im.toNumber() }];
     for (let iter = 0; iter < maxIters - 1; iter++) {
         const z_new = {
-            re: z0.re.times(z0.re).minus(z0.im.times(z0.im)).plus(base_c.re),
-            im: z0.re.times(z0.im).times(2.0).plus(base_c.im),
+            re: z0.re.times(z0.re).minus(z0.im.times(z0.im)).plus(perturbationPoint.re),
+            im: z0.re.times(z0.im).times(2.0).plus(perturbationPoint.im),
         };
         z0 = z_new;
         base_z.push({ re: z_new.re.toNumber(), im: z_new.im.toNumber() });
     }
+
+    const deltaOrigin = { re: x0.minus(perturbationPoint.re).toNumber(), im: y0.minus(perturbationPoint.im).toNumber() };
     const width = x1.minus(x0).toNumber();
     const height = y1.minus(y0).toNumber();
     
@@ -41,10 +30,8 @@ export function render(refresh = false) {
             const idx = i * canvas.width + j;
             const xCoord = j / (canvas.width - 1);
             const yCoord = 1 - i / (canvas.height - 1);
-            const relXCoord = xCoord - baseCoords.x;
-            const relYCoord = yCoord - baseCoords.y;
-            const dx = relXCoord * width;
-            const dy = relYCoord * height;
+            const dx = deltaOrigin.re + xCoord * width;
+            const dy = deltaOrigin.im + yCoord * height;
             const dc = { re: dx, im: dy };
             const dz = { ...dc };
             for (let iter = 0; iter < maxIters; iter++) {
@@ -71,18 +58,4 @@ export function render(refresh = false) {
     imageData.data.set(newData);
     ctx.reset();
     ctx.putImageData(imageData, 0, 0);
-
-    // draw an X at the base point
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    const xCenter = baseCoords.x * canvas.width;
-    const yCenter = (1-baseCoords.y) * canvas.height;
-    ctx.moveTo(xCenter - 5, yCenter + 5);
-    ctx.lineTo(xCenter + 5, yCenter - 5);
-    ctx.stroke();
-
-    ctx.moveTo(xCenter - 5, yCenter - 5);
-    ctx.lineTo(xCenter + 5, yCenter + 5);
-    ctx.stroke();
-
 }

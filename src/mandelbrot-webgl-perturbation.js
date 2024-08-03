@@ -1,15 +1,7 @@
-import { antiAliasing, maxIters, viewBounds } from "./main.js";
+import { antiAliasing, maxIters, perturbationPoint, viewBounds } from "./main.js";
 import { getProgramInfo } from "./webgl.js";
 
 const canvas = document.getElementById("glcanvas");
-
-const baseCoords = { x: 0.5, y: 0.5 };
-
-canvas.addEventListener("click", (event) => {
-    baseCoords.x = event.offsetX / canvas.width;
-    baseCoords.y = 1.0 - event.offsetY / canvas.height;
-    render();
-});
 
 // Fragment shader program
 function fsSource() {
@@ -19,14 +11,14 @@ function fsSource() {
     uniform float uZReHistory[${maxIters}];
     uniform float uZImHistory[${maxIters}];
 
-    uniform vec2 uBaseCoords;
+    uniform vec2 uDeltaOrigin;
     uniform vec2 uViewSize;
     
     varying vec2 coords;
 
 
     void main() {
-        vec2 dc = (coords - uBaseCoords) * uViewSize;
+        vec2 dc = uDeltaOrigin + coords * uViewSize;
         vec2 dz = dc;
 
         for (int i = 0; i < ${maxIters}; i++) {
@@ -57,18 +49,13 @@ function fsSource() {
 };
 
 function getBaseZHistory() {
-    const { x0, y0, x1, y1 } = viewBounds;
-    const baseC = {
-        re: x0.plus(x1.minus(x0).times(baseCoords.x)),
-        im: y0.plus(y1.minus(y0).times(baseCoords.y)),
-    };
-    let z0 = baseC;
+    let z0 = perturbationPoint;
     const zReHistory = [z0.re.toNumber()];
     const zImHistory = [z0.im.toNumber()];
     for (let iter = 0; iter < maxIters - 1; iter++) {
         const zNew = {
-            re: z0.re.times(z0.re).minus(z0.im.times(z0.im)).plus(baseC.re),
-            im: z0.re.times(z0.im).times(2.0).plus(baseC.im),
+            re: z0.re.times(z0.re).minus(z0.im.times(z0.im)).plus(perturbationPoint.re),
+            im: z0.re.times(z0.im).times(2.0).plus(perturbationPoint.im),
         };
         z0 = zNew;
         zReHistory.push(zNew.re.toNumber());
@@ -109,7 +96,7 @@ function drawScene(programInfo) {
     gl.uniform1fv(uniformLocations.uZReHistory, zReHistory);
     gl.uniform1fv(uniformLocations.uZImHistory, zImHistory);
 
-    gl.uniform2fv(uniformLocations.uBaseCoords, [baseCoords.x, baseCoords.y]);
+    gl.uniform2fv(uniformLocations.uDeltaOrigin, [viewBounds.x0.minus(perturbationPoint.re), viewBounds.y0.minus(perturbationPoint.im)]);
 
     gl.uniform2fv(uniformLocations.uViewSize, [viewBounds.x1.minus(viewBounds.x0), viewBounds.y1.minus(viewBounds.y0)]);
 
@@ -126,7 +113,7 @@ function drawScene(programInfo) {
 }
 
 const UNIFORMS = [
-    "uZReHistory", "uZImHistory", "uBaseCoords", "uViewSize",
+    "uZReHistory", "uZImHistory", "uDeltaOrigin", "uViewSize",
 ];
 
 let programInfo;
