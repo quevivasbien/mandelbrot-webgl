@@ -1,3 +1,7 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 #render-config-form {
     display: flex;
     flex-direction: row;
@@ -6,7 +10,6 @@
     align-items: center;
     gap: 30px;
     margin: 20px 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #render-config-form > div {
@@ -27,7 +30,6 @@
 }
 
 #view-loc {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 11px;
     text-align: center;
 }
@@ -81,6 +83,17 @@ button:hover {
 .keyboard-instructions {
     margin-top: 10px;
     text-align: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 12px;
+}
+
+.centered {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.rounded-box {
+    border: #f0f0f0a3;
+    border-radius: 10px;
+    border-style: solid;
+    padding: 20px 40px;
 }

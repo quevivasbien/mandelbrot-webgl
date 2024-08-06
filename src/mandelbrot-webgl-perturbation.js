@@ -13,26 +13,24 @@ function fsSource() {
 
     uniform vec2 uDeltaOrigin;
     uniform vec2 uViewSize;
+
+    ${antiAliasing > 1 ? "uniform float uPixWidth;\n" : ""}
     
     varying vec2 coords;
 
-
-    void main() {
-        vec2 dc = uDeltaOrigin + coords * uViewSize;
+    vec4 iterate(vec2 dc) {
         vec2 dz = dc;
-
         for (int i = 0; i < ${maxIters}; i++) {
             vec2 z0 = vec2(uZReHistory[i], uZImHistory[i]);
             vec2 z = z0 + dz;
             if (dot(z, z) > 4.0) {
                 float t = float(i) + 1. - log(log(dot(z, z)))/log(2.);
-                gl_FragColor = vec4(
+                return vec4(
                     (-cos(0.02 * t) + 1.0) / 2.0, 
                     (-cos(0.03 * t) + 1.0) / 2.0, 
                     (-cos(0.05 * t) + 1.0) / 2.0, 
                     1.0
                 );
-                return;
             }
             // dz' = 2 * z * dz + dz^2 + dc
             dz = vec2(
@@ -40,10 +38,35 @@ function fsSource() {
                 2.0 * z0.x * dz.y + 2.0 * z0.y * dz.x + 2.0 * dz.x * dz.y + dc.y
             );
         }
-
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return vec4(0.0, 0.0, 0.0, 1.0);
     }
     `;
+
+
+    if (antiAliasing === 1) {
+        src += `
+        void main() {
+            vec2 dc = uDeltaOrigin + coords * uViewSize;
+            gl_FragColor = iterate(dc);
+        }
+        `;
+    }
+    else {
+        src += `
+        void main() {
+            vec2 dcBase = uDeltaOrigin + coords * uViewSize;
+            for (int xi = 0; xi < ${antiAliasing}; xi++) {
+                for (int yi = 0; yi < ${antiAliasing}; yi++) {
+                    vec2 dc = dcBase + vec2(
+                        float(xi) + 0.5,
+                        float(yi) + 0.5
+                    ) * uPixWidth / ${antiAliasing}.0;
+                    gl_FragColor = gl_FragColor + iterate(dc) / (${antiAliasing}.0 * ${antiAliasing}.0);
+                }
+            }
+        }
+        `;
+    }
 
     return src;
 };
@@ -102,7 +125,7 @@ function drawScene(programInfo) {
 
     if (programInfo.uniformLocations.uPixWidth) {
         const pixWidth = viewBounds.x1.minus(viewBounds.x0).div(canvas.width).toNumber();
-        gl.uniform2fv(uniformLocations.uPixWidth, split_float(pixWidth));
+        gl.uniform1f(uniformLocations.uPixWidth, pixWidth);
     }
 
     {
