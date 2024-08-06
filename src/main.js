@@ -100,7 +100,23 @@ document.getElementById("max-iters").addEventListener("input", () => {
 document.getElementById("anti-aliasing").addEventListener("change", (e) => {
     antiAliasing = parseInt(e.target.value);
     render(true);
-})
+});
+
+const helpOverlay = document.getElementById("help-overlay");
+
+document.getElementById("show-help-button").addEventListener("click", () => {
+    helpOverlay.style.display = "block";
+});
+
+document.getElementById("close-help-button").addEventListener("click", () => {
+    helpOverlay.style.display = "none";
+});
+
+helpOverlay.addEventListener("click", (e) => {
+    if (e.target === helpOverlay) {
+        helpOverlay.style.display = "none";
+    }
+});
 
 function updateCanvasSize() {
     // Base canvas width and height on window size

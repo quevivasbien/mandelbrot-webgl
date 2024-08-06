@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <title>Mandelbrot WebGL</title>
   <link rel="stylesheet" href="/src/style.css" />
+  <link rel="icon" type="image/png" href="/src/favicon.png" />
 </head>
 
 <body>
@@ -36,32 +37,61 @@
       </select>
     </div>
   </form>
-  <div class="spaced-row">
-    <a id="download-link" href="" download="mandelbrot.png">Save image</a>
-    <div id="view-loc"></div>
-    <a href="./help.html">Help</a>
-  </div>
   <div id="canvas-container">
+    <div class="spaced-row">
+      <a id="download-link" class="top-button" href="" download="mandelbrot.png">Save image</a>
+      <div id="view-loc"></div>
+      <button id="show-help-button" class="top-button">Help</a>
+    </div>
     <canvas id="glcanvas"></canvas>
     <canvas id="2dcanvas"></canvas>
   </div>
   <div class="nav-buttons">
     <div class="nav-row">
-      <button id="zoom-out">-</button>
-      <button id="move-up">&uarr;</button>
-      <button id="zoom-in">+</button>
+      <button id="zoom-out" class="nav-button">-</button>
+      <button id="move-up" class="nav-button">&uarr;</button>
+      <button id="zoom-in" class="nav-button">+</button>
     </div>
     <div class="nav-row">
-      <button id="move-left">&larr;</button>
-      <button id="move-down">&darr;</button>
-      <button id="move-right">&rarr;</button>
+      <button id="move-left" class="nav-button">&larr;</button>
+      <button id="move-down" class="nav-button">&darr;</button>
+      <button id="move-right" class="nav-button">&rarr;</button>
     </div>
-    <div class="keyboard-instructions">
+    <div id="keyboard-instructions">
       <h2>Keyboard controls:</h2>
       <p>Use the <span id="up-key"></span>, <span id="left-key"></span>, <span id="down-key"></span>, and <span
           id="right-key"></span> keys to move the image.</p>
       <p>Use the <span id="zoom-out-key"></span> and <span id="zoom-in-key"></span> keys to zoom in and out.</p>
     </div>
+
+    <div id="help-overlay">
+      <div class="centered">
+        <div class="rounded-box">
+            <div class="spaced-row border-below">
+                <h1>Help</h1>
+                <button id="close-help-button" class="top-button">Close</button>
+            </div>
+            <p>Control the render with the buttons at the bottom of the page, or with your keyboard.</p>
+    
+            <h2>Render modes</h2>
+            <ul>
+                <li><b>WebGL:</b> The fastest option. Uses WebGL to render the fractal using your GPU. This mode has the disadvantage of not being able to zoom in very far before the image quality is degraded due to a lack of floating-point precision.</li>
+                <li><b>WebGL, emulated 64 bit:</b> This mode has more precision than the basic WebGL mode, allowing for a deeper zoom. However, it is substantially slower.</li>
+                <li><b>WebGL, using perturbations:</b> This mode uses a method that allows very deep zooms. It works by using arbitrary-precision calculations to calculate a single base point, then calculating the rest of the points on the image using "perturbations" from the base point. Only the base point needs to be calculated on the CPU, with the other points calculated on the GPU, so this method can run almost as fast as the basic WebGL mode. For this method to work well, you'll want to choose a base point that is close to the image currently being calculated and that lies <em>within</em> the Mandelbrot set. To choose a base point, click on the image while a perturbation mode is selected.</li>
+                <li><b>JS:</b> Renders the fractal using only the CPU. Will be quite slow.</li>
+                <li><b>JS, with perturbations:</b> Renders the fractal using perturbations, but with all calculations done on the CPU. Will be quite slow.</li>
+            </ul>
+    
+            <h2>Maximum iterations</h2>
+    
+            <p>Using more iterations will display the fractal with greater fidelity but increases render time. If the "auto" box is checked, the number of iterations will be set automatically based on the current zoom level. You can also uncheck the "auto" box and set the number of iterations manually.</p>
+    
+            <h2>Anti-aliasing</h2>
+    
+            <p>When using the WebGL rendering modes, you can enable anti-aliasing, which will take multiple samples to calculate the color for each pixel in the image. This can make the image appear smoother but will greatly increase render time.</p>
+        </div>
+    </div>
+  </div>
     <script src="/src/main.js" type="module"></script>
 </body>
 
